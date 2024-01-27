@@ -12,7 +12,7 @@ data_no_outliers = pd.read_csv('C:\Python\PAD_cw\projektowa praca domowa\data_no
 with st.sidebar:
     selected = option_menu(
         menu_title='Menu główne',
-        options = ['Dane', 'Boxplot','Histogramy', 'Violin plot'], 
+        options = ['Dane', 'Boxplot','Histogramy', 'Violin plot', 'Pie Charts'], 
         icons= ['house', 'book', 'envelope'],
         menu_icon = 'cast',
         default_index=0 
@@ -97,3 +97,17 @@ if selected == 'Violin plot':
 
     # Debugging: Display the violin plot
     st.plotly_chart(violin_fig)
+
+if selected == 'Pie Charts':
+    st.title('Pie Charts dla wybranych zmiennych kategorycznych')
+    selected_variable = st.selectbox("Wybierz zmienną kategoryczną:", ['cut', 'color', 'clarity'])
+
+    # Debugging: Check the selected variable
+    st.write(f"Selected Variable: {selected_variable}")
+
+    # Interaktywny Violin Plot
+    pie_fig = px.pie(data_no_outliers, names=selected_variable, title=f"Pie Chart - Price vs {selected_variable}", color=selected_variable)
+    pie_fig.update_layout(xaxis=dict(title=selected_variable), yaxis=dict(title="Price"))
+
+    # Debugging: Display the violin plot
+    st.plotly_chart(pie_fig)
