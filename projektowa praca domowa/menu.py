@@ -3,16 +3,19 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 import seaborn as sns
 import plotly.express as px
+import plotly.figure_factory as ff
 
-data = pd.read_csv('C:\Python\PAD_cw\projektowa praca domowa\messy_data.csv')
+data = pd.read_csv('messy_data.csv')
 data.columns = data.columns.str.replace(' ', '')
-data_cleaned = pd.read_csv('C:\Python\PAD_cw\projektowa praca domowa\data_cleaned.csv', sep=',')
-data_no_outliers = pd.read_csv('C:\Python\PAD_cw\projektowa praca domowa\data_no_outliers.csv', sep=',')
+data_cleaned = pd.read_csv('data_cleaned.csv', sep=',')
+data_no_outliers = pd.read_csv('data_no_outliers.csv', sep=',')
+diamond_clean_data_standard = pd.read_csv('diamond_clean_data_standarized.csv', sep=',')
+
 
 with st.sidebar:
     selected = option_menu(
         menu_title='Menu główne',
-        options = ['Dane', 'Boxplot','Histogramy', 'Violin plot', 'Pie Charts'], 
+        options = ['Dane', 'Boxplot','Histograms', 'Violin plot', 'Pie Charts', 'Correlation Matrix'], 
         icons= ['house', 'book', 'envelope'],
         menu_icon = 'cast',
         default_index=0 
@@ -78,7 +81,7 @@ if selected == 'Boxplot':
         box_fig = px.box(data_no_outliers, y=selected_variable, title=f"Box Plot dla zmiennej: {selected_variable}")
         st.plotly_chart(box_fig)
 
-if selected == 'Histogramy':
+if selected == 'Histograms':
     st.title('Histogramy dla wybranych zmiennych')
     selected_clean = st.selectbox("Wybierz zmienną:", data_no_outliers.columns)
     hst = px.histogram(data_no_outliers, x=selected_clean, title=f"Histogram dla zmiennej: {selected_clean}")
@@ -111,3 +114,27 @@ if selected == 'Pie Charts':
 
     # Debugging: Display the violin plot
     st.plotly_chart(pie_fig)
+
+    # Assuming 'diamond_clean_data' is your DataFrame
+correlation_matrix = diamond_clean_data_standard.corr()
+if selected == 'Correlation Matrix':
+    fig = ff.create_annotated_heatmap(
+        z=correlation_matrix.values,
+        x=list(correlation_matrix.columns),
+        y=list(correlation_matrix.index),
+        colorscale='Viridis',
+        annotation_text=correlation_matrix.round(2).values,
+        showscale=True,
+    )
+
+    fig.update_layout(
+        title="Correlation Matrix",
+        xaxis=dict(title="Features"),
+        yaxis=dict(title="Features"),
+        autosize=False,
+        width=1000,
+        height=1000,
+        font=dict(size=8),  # Adjust font size
+    )
+
+    st.plotly_chart(fig)
