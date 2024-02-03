@@ -1,9 +1,14 @@
 import streamlit as st 
+import numpy as np
 import pandas as pd
 from streamlit_option_menu import option_menu
 import seaborn as sns
 import plotly.express as px
 import plotly.figure_factory as ff
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go   
+
 
 data = pd.read_csv('messy_data.csv')
 data.columns = data.columns.str.replace(' ', '')
@@ -11,11 +16,37 @@ data_cleaned = pd.read_csv('data_cleaned.csv', sep=',')
 data_no_outliers = pd.read_csv('data_no_outliers.csv', sep=',')
 diamond_clean_data_standard = pd.read_csv('diamond_clean_data_standarized.csv', sep=',')
 
+X = diamond_clean_data_standard.drop(["price"],axis=1)
+y = diamond_clean_data_standard.price
+R2_Scores = []
+
+X = sm.add_constant(X)
+
+model = sm.OLS(y, X).fit()
+
+while len(X.columns) > 1:
+    p_values = model.pvalues[1:]
+    max_p_value = p_values.max()
+    if max_p_value > 0.05: 
+        remove_feature = p_values.idxmax()
+        X = X.drop(remove_feature, axis=1)
+        model = sm.OLS(y, X).fit()
+    else:
+        break
+
+print(model.summary())  
+
+residuals = model.resid
+y_pred = model.predict(X)
+
+feature_importances = pd.DataFrame({'Feature': X.columns[1:], 'Coefficient': model.params[1:]})
+feature_importances['Importance'] = np.abs(feature_importances['Coefficient']) / np.abs(feature_importances['Coefficient']).sum()
+feature_importances_sorted = feature_importances.sort_values(by='Importance', ascending=False)
 
 with st.sidebar:
     selected = option_menu(
         menu_title='Menu główne',
-        options = ['Dane', 'Boxplot','Histograms', 'Violin plot', 'Pie Charts', 'Correlation Matrix'], 
+        options = ['Dane', 'Boxplot','Histograms', 'Violin plot', 'Pie Charts', 'Correlation Matrix', 'Model'], 
         icons= ['house', 'book', 'envelope'],
         menu_icon = 'cast',
         default_index=0 
@@ -138,3 +169,41 @@ if selected == 'Correlation Matrix':
     )
 
     st.plotly_chart(fig)
+
+if selected == 'Model':
+
+    fig_feature_importances = go.Figure()
+
+    # Dodanie danych do wykresu słupkowego
+    fig_feature_importances.add_trace(go.Bar(
+        y=feature_importances_sorted['Feature'],  # Nazwy cech na osi Y
+        x=feature_importances_sorted['Importance'],  # Wartości ważności na osi X
+        orientation='h',  # Orientacja pozioma
+        marker=dict(color='skyblue'),  # Kolor słupków
+    ))
+
+    # Dostosowanie układu wykresu
+    fig_feature_importances.update_layout(
+        title='Feature Importances',  # Tytuł wykresu
+        xaxis=dict(title='Importance'),  # Tytuł osi X
+        yaxis=dict(title='Feature'),  # Tytuł osi Y
+    )
+
+
+    viz_data = pd.DataFrame({'Fitted Values': model.fittedvalues, 'Residuals': model.resid})
+
+    fig_residuals = px.scatter(viz_data, x='Fitted Values', y='Residuals', labels={'Residuals': 'Residuals'})
+
+    fig_residuals.add_trace(go.Scatter(x=[min(viz_data['Fitted Values']), max(viz_data['Fitted Values'])],
+                                    y=[0, 0],
+                                    mode='lines',
+                                    name='Zero Line',
+                                    line=dict(color='red', dash='dash')))
+
+
+
+    with st.expander("Feature Importances"):
+        st.plotly_chart(fig_feature_importances)
+
+    with st.expander("Residuals"):
+        st.plotly_chart(fig_residuals)
