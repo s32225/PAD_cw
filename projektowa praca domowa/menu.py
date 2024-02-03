@@ -75,7 +75,6 @@ if selected == 'Dane' and data_option == 'Nieoczyszczone':
     st.subheader(f" Scatterplot dla zmiennych {selected_x} i {selected_y}")
 
 
-    # Interaktywny Scatter Plot
     scatter_fig = px.scatter(data, x=selected_x, y=selected_y, title=f"Scatter Plot: {selected_x} vs {selected_y}")
     st.plotly_chart(scatter_fig)
 
@@ -87,7 +86,6 @@ elif selected == 'Dane' and data_option == 'Oczyszczone':
     st.subheader(f" Scatterplot dla zmiennych {selected_x_clean} i {selected_y_clean}")
 
 
-    # Interaktywny Scatter Plot
     scatter_fig = px.scatter(data_cleaned, x=selected_x_clean, y=selected_y_clean, title=f"Scatter Plot: {selected_x_clean} vs {selected_y_clean}")
     st.plotly_chart(scatter_fig)
 
@@ -99,7 +97,6 @@ if selected == 'Boxplot':
 
         selected_variable = st.selectbox("Wybierz zmienną:", data_cleaned.columns[1:])
 
-        # Interaktywny Box Plot
         box_fig = px.box(data_cleaned, y=selected_variable, title=f"Box Plot dla zmiennej: {selected_variable}")
         st.plotly_chart(box_fig)
 
@@ -108,7 +105,6 @@ if selected == 'Boxplot':
 
         selected_variable = st.selectbox("Wybierz zmienną:", data_no_outliers.columns[1:])
 
-        # Interaktywny Box Plot
         box_fig = px.box(data_no_outliers, y=selected_variable, title=f"Box Plot dla zmiennej: {selected_variable}")
         st.plotly_chart(box_fig)
 
@@ -122,31 +118,24 @@ if selected == 'Violin plot':
     st.title('Violin ploty dla wybranych zmiennych kategorycznych')
     selected_variable = st.selectbox("Wybierz zmienną kategoryczną:", ['cut', 'color', 'clarity'])
 
-    # Debugging: Check the selected variable
     st.write(f"Selected Variable: {selected_variable}")
 
-    # Interaktywny Violin Plot
     violin_fig = px.violin(data_no_outliers, x=selected_variable, y='price', box=True, points="all", title=f"Violin Plot - Price vs {selected_variable}", color=selected_variable)
     violin_fig.update_layout(xaxis=dict(title=selected_variable), yaxis=dict(title="Price"))
 
-    # Debugging: Display the violin plot
     st.plotly_chart(violin_fig)
 
 if selected == 'Pie Charts':
     st.title('Pie Charts dla wybranych zmiennych kategorycznych')
     selected_variable = st.selectbox("Wybierz zmienną kategoryczną:", ['cut', 'color', 'clarity'])
 
-    # Debugging: Check the selected variable
     st.write(f"Selected Variable: {selected_variable}")
 
-    # Interaktywny Violin Plot
     pie_fig = px.pie(data_no_outliers, names=selected_variable, title=f"Pie Chart - Price vs {selected_variable}", color=selected_variable)
     pie_fig.update_layout(xaxis=dict(title=selected_variable), yaxis=dict(title="Price"))
 
-    # Debugging: Display the violin plot
     st.plotly_chart(pie_fig)
 
-    # Assuming 'diamond_clean_data' is your DataFrame
 correlation_matrix = diamond_clean_data_standard.corr()
 if selected == 'Correlation Matrix':
     fig = ff.create_annotated_heatmap(
@@ -165,7 +154,7 @@ if selected == 'Correlation Matrix':
         autosize=False,
         width=1000,
         height=1000,
-        font=dict(size=8),  # Adjust font size
+        font=dict(size=8), 
     )
 
     st.plotly_chart(fig)
@@ -174,19 +163,18 @@ if selected == 'Model':
 
     fig_feature_importances = go.Figure()
 
-    # Dodanie danych do wykresu słupkowego
     fig_feature_importances.add_trace(go.Bar(
-        y=feature_importances_sorted['Feature'],  # Nazwy cech na osi Y
-        x=feature_importances_sorted['Importance'],  # Wartości ważności na osi X
-        orientation='h',  # Orientacja pozioma
-        marker=dict(color='skyblue'),  # Kolor słupków
+        y=feature_importances_sorted['Feature'],  
+        x=feature_importances_sorted['Importance'],  
+        orientation='h',  
+        marker=dict(color='skyblue'),  
     ))
 
-    # Dostosowanie układu wykresu
+
     fig_feature_importances.update_layout(
-        title='Feature Importances',  # Tytuł wykresu
-        xaxis=dict(title='Importance'),  # Tytuł osi X
-        yaxis=dict(title='Feature'),  # Tytuł osi Y
+        title='Feature Importances', 
+        xaxis=dict(title='Importance'),  
+        yaxis=dict(title='Feature'), 
     )
 
 
